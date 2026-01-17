@@ -1,0 +1,22 @@
+[Unit]
+Description=Pi-Overlay-Data Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/www/pi-overlay-data
+ExecStart=/www/pi-overlay-data/venv/bin/python /www/pi-overlay-data/run.py --loop
+Restart=always
+RestartSec=30
+
+Environment=PYTHONUNBUFFERED=1
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pi-overlay-data
+
+[Install]
+WantedBy=multi-user.target
