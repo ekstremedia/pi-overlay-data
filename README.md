@@ -165,7 +165,35 @@ At 2 photos/minute and 25fps playback:
 │   └── tides/             # Water levels (TODO)
 ├── config/
 │   └── config.json        # Zone configurations
+├── tests/                 # Unit tests
 └── data/                  # Output files
+```
+
+## Development
+
+### Install dev dependencies
+
+```bash
+./venv/bin/pip install -r requirements-dev.txt
+```
+
+### Run tests
+
+```bash
+# Run all tests
+./venv/bin/pytest
+
+# Run unit tests only (no network required)
+./venv/bin/pytest -m unit
+
+# Run with coverage
+./venv/bin/pytest --cov=core --cov=providers --cov-report=term-missing
+```
+
+### Linting
+
+```bash
+ruff check .
 ```
 
 ## Service Management
@@ -175,4 +203,3 @@ sudo systemctl status pi-overlay-data
 sudo systemctl restart pi-overlay-data
 journalctl -u pi-overlay-data -f
 ```
-# pi-overlay-data
