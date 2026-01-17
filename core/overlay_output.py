@@ -2,10 +2,9 @@
 
 import json
 import logging
-import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Union
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class OverlayOutput:
 
     def __init__(
         self,
-        data_dir: str | Path,
+        data_dir: Union[str, Path],
         stale_minutes: int = 5,
     ):
         """

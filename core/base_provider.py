@@ -1,7 +1,7 @@
 """Base class for data providers."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 import logging
 
 logger = logging.getLogger(__name__)

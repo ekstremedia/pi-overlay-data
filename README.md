@@ -2,6 +2,8 @@
 
 A modular service that collects overlay data from multiple sources for use in raspilapse timelapses.
 
+**Requires Python 3.9+**
+
 ## Data Providers
 
 | Provider | Status | Description |
@@ -190,11 +192,29 @@ At 2 photos/minute and 25fps playback:
 ./venv/bin/pytest --cov=core --cov=providers --cov-report=term-missing
 ```
 
-### Linting
+### Linting & Formatting
 
 ```bash
+# Format code
+black .
+
+# Check linting
 ruff check .
+
+# Fix auto-fixable lint errors
+ruff check . --fix
 ```
+
+### Pre-commit hooks
+
+Install pre-commit hooks to auto-format on commit:
+
+```bash
+./venv/bin/pip install pre-commit
+pre-commit install
+```
+
+This will run black and ruff automatically before each commit.
 
 ## Service Management
 
