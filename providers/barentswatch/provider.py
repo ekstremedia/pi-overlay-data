@@ -62,6 +62,10 @@ class BarentswatchProvider(BaseProvider):
         self.persist_minutes = config.get("persist_minutes", 10)
         self.persist_seconds = self.persist_minutes * 60
 
+        # Categories to exclude from display (buoys, fishing gear, etc.)
+        # Default excludes Unknown category which contains non-vessel AIS transmitters
+        self.exclude_categories = config.get("exclude_categories", ["Unknown"])
+
         # Track when ships were last seen: mmsi -> timestamp
         self._last_seen: Dict[int, float] = {}
         # Track ship data: mmsi -> ship info
@@ -154,6 +158,9 @@ class BarentswatchProvider(BaseProvider):
                 ship = self._ships.get(mmsi)
                 if ship:
                     formatted = self._format_ship(ship)
+                    # Filter out excluded categories (buoys, fishing gear, etc.)
+                    if formatted.get("category") in self.exclude_categories:
+                        continue
                     formatted["seconds_since_seen"] = int(age)
                     formatted["still_in_zone"] = age < 5
                     display_ships.append(formatted)
