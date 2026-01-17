@@ -7,8 +7,8 @@ Wants=network-online.target
 Type=simple
 User=pi
 Group=pi
-WorkingDirectory=/www/pi-overlay-data
-ExecStart=/www/pi-overlay-data/venv/bin/python /www/pi-overlay-data/run.py --loop
+WorkingDirectory=/home/pi/pi-overlay-data
+ExecStart=/home/pi/pi-overlay-data/venv/bin/python /home/pi/pi-overlay-data/run.py --loop
 Restart=always
 RestartSec=30
 
