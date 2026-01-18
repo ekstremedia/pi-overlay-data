@@ -23,6 +23,7 @@ from config import Config
 from core.overlay_output import OverlayOutput
 from providers.barentswatch.provider import BarentswatchProvider
 from providers.tides.provider import TidesProvider
+from providers.aurora.provider import AuroraProvider
 
 
 def setup_logging(verbose: bool = False) -> None:
@@ -55,7 +56,9 @@ class OverlayDataService:
             self.providers["tides"] = TidesProvider(config.tides, self.data_dir)
             logging.info("Tides provider enabled")
 
-        # TODO: Add aurora provider when implemented
+        if config.is_provider_enabled("aurora"):
+            self.providers["aurora"] = AuroraProvider(config.aurora, self.data_dir)
+            logging.info("Aurora provider enabled")
 
     def run_once(self, force_refresh: bool = False) -> None:
         """
@@ -86,6 +89,16 @@ class OverlayDataService:
                     logging.info(f"Tides: {items[0].get('level', 0):.1f}m, {items[0].get('trend', 'unknown')}")
                 else:
                     logging.info("Tides: no data")
+            elif name == "aurora":
+                items = provider.fetch(force_refresh=force_refresh)
+                lines = provider.format_for_overlay(items)
+                self.output.write_provider_data(name, items, lines)
+                all_overlay_lines[name] = lines
+
+                if items:
+                    logging.info(f"Aurora: Kp {items[0].get('kp', 0)}, Bz {items[0].get('bz', 0)}")
+                else:
+                    logging.info("Aurora: no data")
             else:
                 # Other providers
                 items = provider.fetch()

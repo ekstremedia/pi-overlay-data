@@ -82,9 +82,14 @@ class Config:
             "zones": [],
         }
 
-        # Aurora settings (placeholder)
+        # Aurora settings
         self.aurora = {
             "enabled": os.getenv("AURORA_ENABLED", "false").lower() == "true",
+            "api_url": os.getenv(
+                "AURORA_API_URL", "https://ekstremedia.no/api/pi/aurora"
+            ),
+            "cache_file": os.getenv("AURORA_CACHE_FILE", "aurora.json"),
+            "cache_minutes": int(os.getenv("AURORA_CACHE_MINUTES", "5")),
         }
 
         # Tides settings
