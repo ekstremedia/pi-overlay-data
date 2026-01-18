@@ -75,23 +75,20 @@ class BarentswatchProvider(BaseProvider):
         # Track ship data: mmsi -> ship info
         self._ships: Dict[int, Dict[str, Any]] = {}
 
-    def fetch(self, zone_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def fetch(self) -> List[Dict[str, Any]]:
         """
         Fetch ships from Barentswatch API.
-
-        Args:
-            zone_id: Optional zone ID to fetch. If None, fetches first zone.
 
         Returns:
             List of ships currently in the zone
         """
-        zone = self._get_zone(zone_id)
-        if not zone:
+        if not self.zones:
             return []
 
+        zone = self.zones[0]
         polygon = zone.get("polygon", [])
         if not polygon:
-            logger.error(f"Zone {zone.get('id')} has no polygon")
+            logger.error("Zone has no polygon")
             return []
 
         try:
@@ -110,40 +107,24 @@ class BarentswatchProvider(BaseProvider):
                     if point_in_polygon(lat, lon, polygon):
                         ships_in_zone.append(ship)
 
-            logger.info(f"Found {len(ships_in_zone)} ships in zone {zone.get('id')}")
+            logger.info(f"Found {len(ships_in_zone)} ships in zone")
             return ships_in_zone
 
         except Exception as e:
             logger.error(f"Error fetching ships: {e}")
             return []
 
-    def _get_zone(self, zone_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
-        """Get zone config by ID or return first zone."""
-        if not self.zones:
-            return None
-
-        if zone_id:
-            for zone in self.zones:
-                if zone.get("id") == zone_id:
-                    return zone
-            return None
-
-        return self.zones[0]
-
-    def update(self, zone_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    def update(self) -> List[Dict[str, Any]]:
         """
         Fetch ships and update persistence tracking.
 
         Ships remain visible for persist_minutes after leaving the zone.
 
-        Args:
-            zone_id: Optional zone ID
-
         Returns:
             List of ships to display (including recently departed)
         """
         now = time.time()
-        current_ships = self.fetch(zone_id)
+        current_ships = self.fetch()
 
         # Update tracking for current ships
         for ship in current_ships:
@@ -216,9 +197,9 @@ class BarentswatchProvider(BaseProvider):
         """Format ships as overlay text lines."""
         return [item.get("display", "") for item in items]
 
-    def get_overlay_lines(self, zone_id: Optional[str] = None) -> List[str]:
-        """Get formatted overlay lines for a zone."""
-        ships = self.update(zone_id)
+    def get_overlay_lines(self) -> List[str]:
+        """Get formatted overlay lines for the zone."""
+        ships = self.update()
         return self.format_for_overlay(ships)
 
     def clear(self) -> None:

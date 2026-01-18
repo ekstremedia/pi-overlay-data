@@ -25,8 +25,11 @@ python3 -m venv venv
 cp .env.example .env
 nano .env  # Add your credentials
 
+cp geojson/zone.example.json geojson/zone.json
+nano geojson/zone.json  # Set your zone polygon
+
 # 3. Test
-./venv/bin/python run.py --zone testing
+./venv/bin/python run.py
 
 # 4. Run as service
 sudo cp pi-overlay-data.service /etc/systemd/system/
@@ -52,29 +55,39 @@ AURORA_ENABLED=false
 TIDES_ENABLED=false
 ```
 
-### Zones (config/config.json)
+### Zone (geojson/zone.json)
 
-Define polygon areas to monitor. Use https://geojson.io to draw polygons.
+Define the polygon area to monitor using standard GeoJSON. Use https://geojson.io to draw your polygon.
 
 ```json
 {
-  "zones": [
+  "type": "FeatureCollection",
+  "features": [
     {
-      "id": "my_camera",
-      "name": "Camera Location",
-      "polygon": [[lon, lat], [lon, lat], ...]
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [lon, lat],
+          [lon, lat],
+          [lon, lat],
+          [lon, lat]
+        ]]
+      }
     }
   ]
 }
 ```
+
+Both `Polygon` and `LineString` geometry types are supported. LineStrings are automatically closed.
 
 ## Usage
 
 ```bash
 ./venv/bin/python run.py              # Run once
 ./venv/bin/python run.py --loop       # Run continuously (60s interval)
-./venv/bin/python run.py --zone testing --verbose
-./venv/bin/python run.py --list-zones
+./venv/bin/python run.py --verbose
 ```
 
 ## Output Files
@@ -165,8 +178,9 @@ At 2 photos/minute and 25fps playback:
 │   ├── barentswatch/      # Ship tracking
 │   ├── aurora/            # Northern lights (TODO)
 │   └── tides/             # Water levels (TODO)
-├── config/
-│   └── config.json        # Zone configurations
+├── geojson/
+│   ├── zone.json          # Zone polygon (don't commit)
+│   └── zone.example.json  # Example zone config
 ├── tests/                 # Unit tests
 └── data/                  # Output files
 ```

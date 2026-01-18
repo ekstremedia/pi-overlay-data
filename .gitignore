@@ -10,6 +10,9 @@ __pycache__/
 # Environment (contains secrets)
 .env
 
+# Zone configuration (use zone.example.json as template)
+geojson/zone.json
+
 # Output data (generated at runtime)
 data/
 
