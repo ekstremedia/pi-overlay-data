@@ -57,7 +57,12 @@ TIDES_ENABLED=false
 
 ### Zone (geojson/zone.json)
 
-Define the polygon area to monitor using standard GeoJSON. Use https://geojson.io to draw your polygon.
+Define the polygon area to monitor using standard GeoJSON.
+
+**Creating your zone polygon:**
+1. Open [geojson.io](https://geojson.io/#map=10.72/68.6288/15.3679) (link centered on northern Norway)
+2. Use the polygon tool to draw your monitoring area
+3. Copy the generated JSON and save it to `geojson/zone.json`
 
 ```json
 {
