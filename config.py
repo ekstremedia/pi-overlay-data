@@ -54,7 +54,9 @@ def load_geojson_polygon(geojson_path: Path) -> List[List[float]]:
 class Config:
     """Configuration manager for pi-overlay-data."""
 
-    def __init__(self, env_path: Optional[str] = None, config_path: Optional[str] = None):
+    def __init__(
+        self, env_path: Optional[str] = None, config_path: Optional[str] = None
+    ):
         """
         Initialize configuration.
 

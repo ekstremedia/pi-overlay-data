@@ -52,31 +52,32 @@ class TestConfig:
 
     @pytest.mark.unit
     def test_load_config_json(self):
-        """Test loading zones from JSON config file."""
-        config_data = {
-            "zones": [
-                {
-                    "id": "test_zone",
-                    "name": "Test Zone",
-                    "polygon": [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]],
-                }
-            ]
+        """Test loading zones from GeoJSON config file."""
+        # Config now expects GeoJSON format
+        geojson_data = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+            },
+            "properties": {"name": "Test Zone"},
         }
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as f:
-            json.dump(config_data, f)
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(geojson_data, f)
             config_path = f.name
 
         try:
             config = Config(config_path=config_path)
             config.load_config()
 
+            # Config creates a "default" zone from the GeoJSON
             assert len(config.zones) == 1
-            assert config.zones[0]["id"] == "test_zone"
-            assert config.get_zone("test_zone") is not None
+            assert config.zones[0]["id"] == "default"
+            assert config.get_zone("default") is not None
             assert config.get_zone("nonexistent") is None
+            # Verify polygon was loaded
+            assert len(config.polygon) > 0
         finally:
             os.unlink(config_path)
 

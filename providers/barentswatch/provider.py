@@ -2,7 +2,7 @@
 
 import logging
 import time
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 
 from core.base_provider import BaseProvider
 from core.heading import degrees_to_compass_8point
@@ -21,7 +21,9 @@ def point_in_polygon(lat: float, lon: float, polygon: List[List[float]]) -> bool
         xi, yi = polygon[i][0], polygon[i][1]
         xj, yj = polygon[j][0], polygon[j][1]
 
-        if ((yi > lat) != (yj > lat)) and (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi):
+        if ((yi > lat) != (yj > lat)) and (
+            lon < (xj - xi) * (lat - yi) / (yj - yi) + xi
+        ):
             inside = not inside
         j = i
 
@@ -172,7 +174,9 @@ class BarentswatchProvider(BaseProvider):
         speed = ship.get("speedOverGround") or 0
         heading = ship.get("trueHeading") or ship.get("courseOverGround")
 
-        direction = degrees_to_compass_8point(heading) if heading is not None else "unknown"
+        direction = (
+            degrees_to_compass_8point(heading) if heading is not None else "unknown"
+        )
 
         # Format: NAME (MMSI) 12.2 kts, north-west
         if speed > 0.5:

@@ -48,11 +48,17 @@ class OverlayOutput:
                 updated_at = data.get("updated_at")
                 if updated_at:
                     try:
-                        updated_time = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
-                        age_seconds = (datetime.now(timezone.utc) - updated_time).total_seconds()
+                        updated_time = datetime.fromisoformat(
+                            updated_at.replace("Z", "+00:00")
+                        )
+                        age_seconds = (
+                            datetime.now(timezone.utc) - updated_time
+                        ).total_seconds()
 
                         if age_seconds > self.stale_seconds:
-                            logger.info(f"Clearing stale data from {json_file.name} (age: {age_seconds:.0f}s)")
+                            logger.info(
+                                f"Clearing stale data from {json_file.name} (age: {age_seconds:.0f}s)"
+                            )
                             self._write_empty(json_file)
                     except (ValueError, TypeError):
                         self._write_empty(json_file)

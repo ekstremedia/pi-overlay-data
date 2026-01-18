@@ -96,9 +96,13 @@ def main():
     parser = argparse.ArgumentParser(description="Overlay data service for raspilapse")
 
     parser.add_argument("--loop", action="store_true", help="Run continuously")
-    parser.add_argument("--interval", type=int, default=60, help="Update interval (seconds)")
+    parser.add_argument(
+        "--interval", type=int, default=60, help="Update interval (seconds)"
+    )
     parser.add_argument("--env", type=str, default=None, help="Path to .env file")
-    parser.add_argument("--config", type=str, default=None, help="Path to zone.json geojson file")
+    parser.add_argument(
+        "--config", type=str, default=None, help="Path to zone.json geojson file"
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose logging")
 
     args = parser.parse_args()

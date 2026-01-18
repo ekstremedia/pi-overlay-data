@@ -195,20 +195,13 @@ class TestBarentswatchProvider:
         assert len(provider._ships) == 0
 
     @pytest.mark.unit
-    def test_get_zone(self, provider_config):
-        """Test getting zone by ID."""
+    def test_zones_access(self, provider_config):
+        """Test direct zone access via zones list."""
         provider = BarentswatchProvider(provider_config)
 
-        zone = provider._get_zone("test")
-        assert zone is not None
-        assert zone["id"] == "test"
-
-        zone = provider._get_zone("nonexistent")
-        assert zone is None
-
-        # Default zone (first one)
-        zone = provider._get_zone(None)
-        assert zone is not None
+        assert len(provider.zones) == 1
+        assert provider.zones[0]["id"] == "test"
+        assert "polygon" in provider.zones[0]
 
     @pytest.mark.unit
     def test_provider_disabled(self):
