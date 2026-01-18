@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from config import Config
 from core.overlay_output import OverlayOutput
 from providers.barentswatch.provider import BarentswatchProvider
+from providers.tides.provider import TidesProvider
 
 
 def setup_logging(verbose: bool = False) -> None:
@@ -50,10 +51,19 @@ class OverlayDataService:
             self.providers["ships"] = BarentswatchProvider(config.barentswatch)
             logging.info("Barentswatch ship provider enabled")
 
-        # TODO: Add aurora and tides providers when implemented
+        if config.is_provider_enabled("tides"):
+            self.providers["tides"] = TidesProvider(config.tides, self.data_dir)
+            logging.info("Tides provider enabled")
 
-    def run_once(self) -> None:
-        """Fetch data from all providers and write output."""
+        # TODO: Add aurora provider when implemented
+
+    def run_once(self, force_refresh: bool = False) -> None:
+        """
+        Fetch data from all providers and write output.
+
+        Args:
+            force_refresh: Force refresh of cached data (used on startup)
+        """
         all_overlay_lines = {}
 
         for name, provider in self.providers.items():
@@ -66,6 +76,16 @@ class OverlayDataService:
                 all_overlay_lines[name] = lines
 
                 logging.info(f"Ships: {len(items)} in zone")
+            elif name == "tides":
+                items = provider.fetch(force_refresh=force_refresh)
+                lines = provider.format_for_overlay(items)
+                self.output.write_provider_data(name, items, lines)
+                all_overlay_lines[name] = lines
+
+                if items:
+                    logging.info(f"Tides: {items[0].get('level', 0):.1f}m, {items[0].get('trend', 'unknown')}")
+                else:
+                    logging.info("Tides: no data")
             else:
                 # Other providers
                 items = provider.fetch()
@@ -80,9 +100,12 @@ class OverlayDataService:
         """Run continuously."""
         logging.info(f"Starting overlay data loop (interval: {interval}s)")
 
+        first_run = True
         while True:
             try:
-                self.run_once()
+                # Force refresh on first run (startup) to get fresh data
+                self.run_once(force_refresh=first_run)
+                first_run = False
             except KeyboardInterrupt:
                 logging.info("Stopping")
                 break
@@ -128,7 +151,7 @@ def main():
     if args.loop:
         service.run_loop(interval=args.interval)
     else:
-        service.run_once()
+        service.run_once(force_refresh=True)
         print(f"Data written to {config.data_dir}/")
 
 

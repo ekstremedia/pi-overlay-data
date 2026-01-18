@@ -13,6 +13,7 @@ __pycache__/
 # Zone configuration (use zone.example.json as template)
 geojson/zone.json
 geojson/test.json
+geojson/correctzone.json
 
 # Output data (generated at runtime)
 data/

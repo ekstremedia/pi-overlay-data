@@ -1,2 +1,5 @@
 # Tide/water level data provider
-# TODO: Implement tide data integration
+from providers.tides.provider import TidesProvider
+from providers.tides.client import TideClient
+
+__all__ = ["TidesProvider", "TideClient"]
