@@ -66,6 +66,10 @@ class BarentswatchProvider(BaseProvider):
         # Default excludes Unknown category which contains non-vessel AIS transmitters
         self.exclude_categories = config.get("exclude_categories", ["Unknown"])
 
+        # Minimum speed to display (filters out stationary/anchored ships)
+        # Default 0.5 kts to ignore drift, set higher to only show moving ships
+        self.min_speed = config.get("min_speed", 0.5)
+
         # Track when ships were last seen: mmsi -> timestamp
         self._last_seen: Dict[int, float] = {}
         # Track ship data: mmsi -> ship info
@@ -160,6 +164,9 @@ class BarentswatchProvider(BaseProvider):
                     formatted = self._format_ship(ship)
                     # Filter out excluded categories (buoys, fishing gear, etc.)
                     if formatted.get("category") in self.exclude_categories:
+                        continue
+                    # Filter out stationary/slow ships below min_speed
+                    if formatted.get("speed", 0) < self.min_speed:
                         continue
                     formatted["seconds_since_seen"] = int(age)
                     formatted["still_in_zone"] = age < 5

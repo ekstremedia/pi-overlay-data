@@ -36,6 +36,7 @@ class Config:
             "client_secret": os.getenv("BARENTSWATCH_CLIENT_SECRET", ""),
             "lookback_hours": int(os.getenv("LOOKBACK_HOURS", "3")),
             "persist_minutes": int(os.getenv("PERSIST_MINUTES", "10")),
+            "min_speed": float(os.getenv("MIN_SPEED", "0.5")),
             "zones": [],
         }
 
