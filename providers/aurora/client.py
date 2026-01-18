@@ -93,7 +93,9 @@ class AuroraClient:
             response.raise_for_status()
 
             data = response.json()
-            logger.debug(f"Received aurora data: Kp={data.get('kp')}, Bz={data.get('bz')}")
+            logger.debug(
+                f"Received aurora data: Kp={data.get('kp')}, Bz={data.get('bz')}"
+            )
             return data
 
         except requests.RequestException as e:

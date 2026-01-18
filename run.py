@@ -86,7 +86,9 @@ class OverlayDataService:
                 all_overlay_lines[name] = lines
 
                 if items:
-                    logging.info(f"Tides: {items[0].get('level', 0):.1f}m, {items[0].get('trend', 'unknown')}")
+                    logging.info(
+                        f"Tides: {items[0].get('level', 0):.1f}m, {items[0].get('trend', 'unknown')}"
+                    )
                 else:
                     logging.info("Tides: no data")
             elif name == "aurora":
@@ -96,7 +98,9 @@ class OverlayDataService:
                 all_overlay_lines[name] = lines
 
                 if items:
-                    logging.info(f"Aurora: Kp {items[0].get('kp', 0)}, Bz {items[0].get('bz', 0)}")
+                    logging.info(
+                        f"Aurora: Kp {items[0].get('kp', 0)}, Bz {items[0].get('bz', 0)}"
+                    )
                 else:
                     logging.info("Aurora: no data")
             else:

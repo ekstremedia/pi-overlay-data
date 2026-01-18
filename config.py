@@ -95,9 +95,7 @@ class Config:
         # Tides settings
         self.tides = {
             "enabled": os.getenv("TIDES_ENABLED", "false").lower() == "true",
-            "api_url": os.getenv(
-                "TIDES_API_URL", "https://ekstremedia.no/api/pi/tide"
-            ),
+            "api_url": os.getenv("TIDES_API_URL", "https://ekstremedia.no/api/pi/tide"),
             "cache_file": os.getenv("TIDES_CACHE_FILE", "tide.json"),
             "cache_hours": int(os.getenv("TIDES_CACHE_HOURS", "24")),
         }

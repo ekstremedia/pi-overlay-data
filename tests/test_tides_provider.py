@@ -308,7 +308,10 @@ class TestTideClient:
             json.dump(cache_data, f)
 
         # Mock API call
-        new_data = {**sample_api_response, "current": {"level_cm": 200, "trend": "falling"}}
+        new_data = {
+            **sample_api_response,
+            "current": {"level_cm": 200, "trend": "falling"},
+        }
         client._fetch_from_api = Mock(return_value=new_data)
 
         result = client.get_tide_data(force_refresh=True)
@@ -354,7 +357,9 @@ class TestTideClient:
         import requests
 
         with patch.object(
-            client.session, "get", side_effect=requests.RequestException("Connection error")
+            client.session,
+            "get",
+            side_effect=requests.RequestException("Connection error"),
         ):
             result = client._fetch_from_api()
 
