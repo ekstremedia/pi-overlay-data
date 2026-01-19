@@ -113,12 +113,16 @@ class TestAuroraProvider:
     def test_format_for_overlay_bz_arrows(self, provider):
         """Test Bz arrow directions in format_for_overlay."""
         # South = down arrow (good for aurora)
-        south_item = [{"kp": 2, "bz": -1, "bz_status": "south", "speed": 400, "storm": "G0"}]
+        south_item = [
+            {"kp": 2, "bz": -1, "bz_status": "south", "speed": 400, "storm": "G0"}
+        ]
         result = provider.format_for_overlay(south_item)
         assert "↓" in result[0]
 
         # North = up arrow
-        north_item = [{"kp": 2, "bz": 1, "bz_status": "north", "speed": 400, "storm": "G0"}]
+        north_item = [
+            {"kp": 2, "bz": 1, "bz_status": "north", "speed": 400, "storm": "G0"}
+        ]
         result = provider.format_for_overlay(north_item)
         assert "↑" in result[0]
 
@@ -335,7 +339,9 @@ class TestAuroraClient:
         """Test _fetch_from_api with failed response."""
         import requests as req
 
-        with patch.object(client.session, "get", side_effect=req.RequestException("Server error")):
+        with patch.object(
+            client.session, "get", side_effect=req.RequestException("Server error")
+        ):
             result = client._fetch_from_api()
 
             assert result is None
