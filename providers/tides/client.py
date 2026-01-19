@@ -18,7 +18,7 @@ class TideClient:
         self,
         api_url: str,
         cache_file: Path,
-        cache_hours: int = 24,
+        cache_hours: int = 1,
     ):
         """
         Initialize tide client.
@@ -26,7 +26,7 @@ class TideClient:
         Args:
             api_url: URL to fetch tide data from
             cache_file: Path to cache file (tide.json)
-            cache_hours: Hours before cache expires (default 24)
+            cache_hours: Hours before cache expires (default 1)
         """
         self.api_url = api_url
         self.cache_file = cache_file
