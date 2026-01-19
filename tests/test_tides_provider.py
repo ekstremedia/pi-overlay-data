@@ -5,8 +5,7 @@ import pytest
 import os
 import sys
 from datetime import datetime, timezone, timedelta
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
