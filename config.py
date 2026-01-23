@@ -98,8 +98,8 @@ class Config:
             "api_url": os.getenv("TIDES_API_URL", "https://ekstremedia.no/api/pi/tide"),
             "cache_file": os.getenv("TIDES_CACHE_FILE", "tide.json"),
             "cache_hours": int(
-                os.getenv("TIDES_CACHE_HOURS", "12")
-            ),  # Server updates twice daily
+                os.getenv("TIDES_CACHE_HOURS", "6")
+            ),  # API returns 24h data, refresh every 6h to keep future extremes
         }
 
     def _load_env(self, env_path: Optional[str] = None) -> None:
