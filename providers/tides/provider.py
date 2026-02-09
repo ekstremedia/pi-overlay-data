@@ -80,9 +80,15 @@ class TidesProvider(BaseProvider):
             Transformed tide data dict
         """
         try:
+            # Check if API provides pre-computed values (legacy format)
             current = data.get("current", {})
             next_high = data.get("next_high", {})
             next_low = data.get("next_low", {})
+
+            # If not provided, calculate from points
+            points = data.get("points", [])
+            if points and not current:
+                current, next_high, next_low = self._calculate_from_points(points)
 
             # Convert cm to meters
             level_cm = current.get("level_cm", 0)
@@ -107,6 +113,90 @@ class TidesProvider(BaseProvider):
         except (KeyError, TypeError, ValueError) as e:
             logger.error(f"Failed to transform tide data: {e}")
             return None
+
+    def _calculate_from_points(
+        self, points: List[Dict[str, Any]]
+    ) -> tuple:
+        """
+        Calculate current level, trend, and next high/low from points data.
+
+        Args:
+            points: List of points with time and level_cm
+
+        Returns:
+            Tuple of (current, next_high, next_low) dicts
+        """
+        if not points:
+            return {}, {}, {}
+
+        now = datetime.now().astimezone()
+
+        # Parse all points with their times
+        parsed_points = []
+        for p in points:
+            try:
+                t = datetime.fromisoformat(p["time"])
+                parsed_points.append({"time": t, "level_cm": p["level_cm"]})
+            except (KeyError, ValueError):
+                continue
+
+        if not parsed_points:
+            return {}, {}, {}
+
+        # Sort by time
+        parsed_points.sort(key=lambda x: x["time"])
+
+        # Find current level (closest point to now, preferring past or equal)
+        current_idx = 0
+        for i, p in enumerate(parsed_points):
+            if p["time"] <= now:
+                current_idx = i
+            else:
+                break
+
+        current_level = parsed_points[current_idx]["level_cm"]
+
+        # Calculate trend by comparing with previous point
+        trend = "stable"
+        if current_idx > 0:
+            prev_level = parsed_points[current_idx - 1]["level_cm"]
+            if current_level > prev_level:
+                trend = "rising"
+            elif current_level < prev_level:
+                trend = "falling"
+
+        current = {"level_cm": current_level, "trend": trend}
+
+        # Find next high and low from future points
+        next_high = {}
+        next_low = {}
+
+        # Look for local extrema in future points
+        future_points = [p for p in parsed_points if p["time"] > now]
+        if len(future_points) >= 3:
+            for i in range(1, len(future_points) - 1):
+                prev_l = future_points[i - 1]["level_cm"]
+                curr_l = future_points[i]["level_cm"]
+                next_l = future_points[i + 1]["level_cm"]
+
+                # Local maximum (high tide)
+                if curr_l > prev_l and curr_l >= next_l and not next_high:
+                    next_high = {
+                        "time": future_points[i]["time"].isoformat(),
+                        "level_cm": curr_l,
+                    }
+
+                # Local minimum (low tide)
+                if curr_l < prev_l and curr_l <= next_l and not next_low:
+                    next_low = {
+                        "time": future_points[i]["time"].isoformat(),
+                        "level_cm": curr_l,
+                    }
+
+                if next_high and next_low:
+                    break
+
+        return current, next_high, next_low
 
     def _get_next_event(
         self, next_high: Dict[str, Any], next_low: Dict[str, Any]
