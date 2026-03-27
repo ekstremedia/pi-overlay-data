@@ -19,9 +19,10 @@ from flask import Flask, jsonify, render_template, request
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 
-app = Flask(__name__,
+app = Flask(
+    __name__,
     template_folder=str(Path(__file__).parent / "templates"),
-    static_folder=str(Path(__file__).parent / "static")
+    static_folder=str(Path(__file__).parent / "static"),
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -50,6 +51,7 @@ def parse_iso_datetime(dt_str: str) -> datetime:
 
 # ============== API ENDPOINTS ==============
 
+
 @app.route("/api/tides")
 def api_tides():
     """
@@ -77,20 +79,24 @@ def api_tides():
         try:
             point_time = parse_iso_datetime(point["time"])
             # Include points within range or future points
-            filtered_points.append({
-                "time": point["time"],
-                "level_cm": point["level_cm"],
-                "timestamp": point_time.isoformat()
-            })
+            filtered_points.append(
+                {
+                    "time": point["time"],
+                    "level_cm": point["level_cm"],
+                    "timestamp": point_time.isoformat(),
+                }
+            )
         except (KeyError, ValueError):
             continue
 
-    return jsonify({
-        "location": tide_data.get("location", "Unknown"),
-        "fetched_at": data.get("fetched_at"),
-        "points": filtered_points,
-        "count": len(filtered_points)
-    })
+    return jsonify(
+        {
+            "location": tide_data.get("location", "Unknown"),
+            "fetched_at": data.get("fetched_at"),
+            "points": filtered_points,
+            "count": len(filtered_points),
+        }
+    )
 
 
 @app.route("/api/aurora")
@@ -101,17 +107,19 @@ def api_aurora():
         return jsonify({"error": "No aurora data available"}), 404
 
     item = data["items"][0]
-    return jsonify({
-        "kp": item.get("kp", 0),
-        "bz": item.get("bz", 0),
-        "bz_status": item.get("bz_status", "unknown"),
-        "speed": item.get("speed", 0),
-        "storm": item.get("storm", "G0"),
-        "conditions": item.get("conditions", ""),
-        "favorable": item.get("favorable", False),
-        "updated_at": data.get("updated_at"),
-        "generated_at": item.get("generated_at")
-    })
+    return jsonify(
+        {
+            "kp": item.get("kp", 0),
+            "bz": item.get("bz", 0),
+            "bz_status": item.get("bz_status", "unknown"),
+            "speed": item.get("speed", 0),
+            "storm": item.get("storm", "G0"),
+            "conditions": item.get("conditions", ""),
+            "favorable": item.get("favorable", False),
+            "updated_at": data.get("updated_at"),
+            "generated_at": item.get("generated_at"),
+        }
+    )
 
 
 @app.route("/api/ships")
@@ -121,11 +129,13 @@ def api_ships():
     if not data:
         return jsonify({"error": "No ship data available"}), 404
 
-    return jsonify({
-        "ships": data.get("items", []),
-        "count": data.get("count", 0),
-        "updated_at": data.get("updated_at")
-    })
+    return jsonify(
+        {
+            "ships": data.get("items", []),
+            "count": data.get("count", 0),
+            "updated_at": data.get("updated_at"),
+        }
+    )
 
 
 @app.route("/api/summary")
@@ -138,24 +148,41 @@ def api_summary():
     summary = {
         "tides": {
             "available": bool(tide_data),
-            "location": tide_data.get("tide_data", {}).get("location", "Unknown") if tide_data else None,
-            "points_count": len(tide_data.get("tide_data", {}).get("points", [])) if tide_data else 0
+            "location": (
+                tide_data.get("tide_data", {}).get("location", "Unknown")
+                if tide_data
+                else None
+            ),
+            "points_count": (
+                len(tide_data.get("tide_data", {}).get("points", []))
+                if tide_data
+                else 0
+            ),
         },
         "aurora": {
             "available": bool(aurora_data and aurora_data.get("items")),
-            "kp": aurora_data["items"][0].get("kp") if aurora_data and aurora_data.get("items") else None,
-            "favorable": aurora_data["items"][0].get("favorable") if aurora_data and aurora_data.get("items") else None
+            "kp": (
+                aurora_data["items"][0].get("kp")
+                if aurora_data and aurora_data.get("items")
+                else None
+            ),
+            "favorable": (
+                aurora_data["items"][0].get("favorable")
+                if aurora_data and aurora_data.get("items")
+                else None
+            ),
         },
         "ships": {
             "available": bool(ships_data),
-            "count": ships_data.get("count", 0) if ships_data else 0
-        }
+            "count": ships_data.get("count", 0) if ships_data else 0,
+        },
     }
 
     return jsonify(summary)
 
 
 # ============== DASHBOARD ==============
+
 
 @app.route("/")
 def dashboard():
@@ -164,6 +191,7 @@ def dashboard():
 
 
 # ============== MAIN ==============
+
 
 def main():
     parser = argparse.ArgumentParser(description="Overlay data dashboard server")
