@@ -114,9 +114,7 @@ class TidesProvider(BaseProvider):
             logger.error(f"Failed to transform tide data: {e}")
             return None
 
-    def _calculate_from_points(
-        self, points: List[Dict[str, Any]]
-    ) -> tuple:
+    def _calculate_from_points(self, points: List[Dict[str, Any]]) -> tuple:
         """
         Calculate current level, trend, and next high/low from points data.
 
@@ -171,30 +169,88 @@ class TidesProvider(BaseProvider):
         next_high = {}
         next_low = {}
 
-        # Look for local extrema in future points
+        # Look for true extrema in future points using a wider window
+        # to avoid detecting noise/plateaus as separate high/low
         future_points = [p for p in parsed_points if p["time"] > now]
-        if len(future_points) >= 3:
-            for i in range(1, len(future_points) - 1):
-                prev_l = future_points[i - 1]["level_cm"]
+
+        # Find all local extrema first, then pick the significant ones
+        all_highs = []
+        all_lows = []
+
+        # Use a window of 3 points on each side (30 min with 10-min data)
+        # to find robust extrema that aren't just noise
+        window = 3
+        if len(future_points) >= (2 * window + 1):
+            for i in range(window, len(future_points) - window):
                 curr_l = future_points[i]["level_cm"]
-                next_l = future_points[i + 1]["level_cm"]
+                curr_t = future_points[i]["time"]
 
-                # Local maximum (high tide)
-                if curr_l > prev_l and curr_l >= next_l and not next_high:
+                # Get levels in window before and after
+                before = [future_points[j]["level_cm"] for j in range(i - window, i)]
+                after = [
+                    future_points[j]["level_cm"] for j in range(i + 1, i + window + 1)
+                ]
+
+                # Local maximum: current is higher than all points in window
+                if all(curr_l >= b for b in before) and all(curr_l >= a for a in after):
+                    # Also check it's actually higher than at least some points
+                    if curr_l > min(before) and curr_l > min(after):
+                        all_highs.append(
+                            {
+                                "time": curr_t,
+                                "level_cm": curr_l,
+                            }
+                        )
+
+                # Local minimum: current is lower than all points in window
+                if all(curr_l <= b for b in before) and all(curr_l <= a for a in after):
+                    # Also check it's actually lower than at least some points
+                    if curr_l < max(before) and curr_l < max(after):
+                        all_lows.append(
+                            {
+                                "time": curr_t,
+                                "level_cm": curr_l,
+                            }
+                        )
+
+        # Pick the first valid high and low that make sense together
+        # They should be at least 3 hours apart and have meaningful height diff
+        min_separation_hours = 3
+        min_height_diff_cm = 20
+
+        for h in all_highs:
+            if next_high:
+                break
+            for low in all_lows:
+                time_diff = abs((h["time"] - low["time"]).total_seconds() / 3600)
+                height_diff = abs(h["level_cm"] - low["level_cm"])
+
+                if (
+                    time_diff >= min_separation_hours
+                    and height_diff >= min_height_diff_cm
+                ):
                     next_high = {
-                        "time": future_points[i]["time"].isoformat(),
-                        "level_cm": curr_l,
+                        "time": h["time"].isoformat(),
+                        "level_cm": h["level_cm"],
                     }
-
-                # Local minimum (low tide)
-                if curr_l < prev_l and curr_l <= next_l and not next_low:
                     next_low = {
-                        "time": future_points[i]["time"].isoformat(),
-                        "level_cm": curr_l,
+                        "time": low["time"].isoformat(),
+                        "level_cm": low["level_cm"],
                     }
-
-                if next_high and next_low:
                     break
+
+        # Fallback: if validation filtered everything out, use first extrema
+        # but only if we have both and they're reasonably separated
+        if not next_high and all_highs:
+            next_high = {
+                "time": all_highs[0]["time"].isoformat(),
+                "level_cm": all_highs[0]["level_cm"],
+            }
+        if not next_low and all_lows:
+            next_low = {
+                "time": all_lows[0]["time"].isoformat(),
+                "level_cm": all_lows[0]["level_cm"],
+            }
 
         return current, next_high, next_low
 
