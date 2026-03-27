@@ -55,6 +55,7 @@ class BarentswatchClient:
                 "scope": "ais",
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"},
+            timeout=30,
         )
 
         response.raise_for_status()
@@ -96,6 +97,7 @@ class BarentswatchClient:
             url,
             json=json_data,
             headers=headers,
+            timeout=30,
         )
 
         response.raise_for_status()
