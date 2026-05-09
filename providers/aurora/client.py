@@ -10,9 +10,7 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-NOAA_KP_FALLBACK_URL = (
-    "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json"
-)
+NOAA_KP_FALLBACK_URL = "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json"
 
 
 class AuroraClient:
