@@ -10,6 +10,10 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+NOAA_KP_FALLBACK_URL = (
+    "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json"
+)
+
 
 class AuroraClient:
     """Client for fetching and caching aurora data."""
@@ -85,6 +89,20 @@ class AuroraClient:
 
         logger.info(f"Cached aurora data to {self.cache_file}")
 
+    def _fetch_kp_from_noaa(self) -> Optional[float]:
+        """Fetch the most recent estimated Kp directly from NOAA SWPC."""
+        try:
+            resp = self.session.get(NOAA_KP_FALLBACK_URL, timeout=10)
+            resp.raise_for_status()
+            records = resp.json()
+            for rec in reversed(records):
+                kp = rec.get("estimated_kp")
+                if isinstance(kp, (int, float)):
+                    return float(kp)
+        except (requests.RequestException, ValueError) as e:
+            logger.warning(f"NOAA Kp fallback failed: {e}")
+        return None
+
     def _fetch_from_api(self) -> Optional[Dict[str, Any]]:
         """Fetch fresh data from API."""
         try:
@@ -93,6 +111,15 @@ class AuroraClient:
             response.raise_for_status()
 
             data = response.json()
+
+            if data.get("kp") is None:
+                fallback_kp = self._fetch_kp_from_noaa()
+                if fallback_kp is not None:
+                    logger.info(
+                        f"Upstream Kp is null; using NOAA fallback: {fallback_kp}"
+                    )
+                    data["kp"] = fallback_kp
+
             logger.debug(
                 f"Received aurora data: Kp={data.get('kp')}, Bz={data.get('bz')}"
             )
